@@ -1,10 +1,19 @@
 const express = require('express');
 const fs = require('fs');
+const morgan = require('morgan');
 
 const app = express();
 const port = 8000;
 
+// 3rd party Middleware
+app.use(morgan('dev')); //Morgan is a logger
 app.use(express.json());
+
+// custom Middleware
+app.use((req, res, next)=>{
+    req.requestTime= new Date().toISOString();
+    next();
+})
 
 const tours = JSON.parse(fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`));
 
@@ -12,6 +21,7 @@ const tours = JSON.parse(fs.readFileSync(`${__dirname}/dev-data/data/tours-simpl
 const getAllTours = (req, res) => {
 res.status(200).json({
     status: 'success',
+    requestedAt: req.requestTime,
     results: tours.length,
     data: {
         tours
