@@ -19,6 +19,52 @@ app.get('/api/v1/tours', (req, res) => {
         }
     })
 })
+// Get Tour by ID
+app.get('/api/v1/tours/:id', (req, res) => {
+    const id = req.params.id * 1; // string to int conversion
+    const tour = tours.find(t => t.id === id);
+
+    // tour not found
+    if(!tour){
+        return (
+            res.status(404).json({
+                status: 'failed',
+                message: `No tour found with id: ${id}`
+            })
+        );
+    }
+
+    // on success
+    res.status(200).json({
+        status: 'success',
+        data: {
+            tour
+        }
+    })
+})
+// Patch Tour details by ID
+app.patch('/api/v1/tours/:id', (req, res) => {
+    const id = req.params.id * 1; // string to int conversion
+    const tour = tours.find(t => t.id === id);
+
+    // tour not found
+    if(id >= tours.length ){
+        return (
+            res.status(404).json({
+                status: 'failed',
+                message: `No tour found with id: ${id}`
+            })
+        );
+    }
+
+    // on success
+    res.status(200).json({
+        status: 'success',
+        data: {
+            tour: '<Updating Tour...>'
+        }
+    })
+})
 // Create a new Tour
 app.post('/api/v1/tours', (req, res) => {
     console.log((req.body));
