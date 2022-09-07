@@ -65,6 +65,29 @@ app.patch('/api/v1/tours/:id', (req, res) => {
         }
     })
 })
+// Delete Tour by ID
+app.delete('/api/v1/tours/:id', (req, res) => {
+    const id = req.params.id * 1; // string to int conversion
+    const tour = tours.find(t => t.id === id);
+
+    // tour not found
+    if(id >= tours.length ){
+        return (
+            res.status(404).json({
+                status: 'failed',
+                message: `No tour found with id: ${id}`
+            })
+        );
+    }
+
+    // on success
+    res.status(204).json({
+        status: 'success',
+        data: {
+            tour: '<Deleting Tour...>'
+        }
+    })
+})
 // Create a new Tour
 app.post('/api/v1/tours', (req, res) => {
     console.log((req.body));
