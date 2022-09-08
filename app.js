@@ -117,24 +117,72 @@ const createNewTour = (req, res) => {
     });
 };
 
-/*
-app.get('/api/v1/tours', getAllTours);
-app.post('/api/v1/tours', createNewTour);
-app.get('/api/v1/tours/:id', getTourById);
-app.patch('/api/v1/tours/:id', updateTour);
-app.delete('/api/v1/tours/:id', deleteTour);
-*/
+// Get all Users
+const getAllUsers = (req,res) => {
+    res.status(500).send({
+        status: 'error',
+        message: 'This route is not implemented yet!'
+    })
+}
 
-{/*-----Refactoring routes in better way-----*/}
-app.route('/api/v1/tours')
+// Create a new User
+const createNewUser = (req,res) => {
+    res.status(500).send({
+        status: 'error',
+        message: 'This route is not implemented yet!'
+    })
+}
+
+// Get User by ID
+const getUserById = (req,res) => {
+    res.status(500).send({
+        status: 'error',
+        message: 'This route is not implemented yet!'
+    })
+}
+
+// Update User
+const updateUser = (req,res) => {
+    res.status(500).send({
+        status: 'error',
+        message: 'This route is not implemented yet!'
+    })
+}
+
+// Delete User
+const deleteUser = (req,res) => {
+    res.status(500).send({
+        status: 'error',
+        message: 'This route is not implemented yet!'
+    })
+}
+
+{/*-----Creating and Mounting Routers-----*/}
+const tourRouter = express.Router(); // creating Router
+const userRouter = express.Router();
+
+app.use('/api/v1/tours', tourRouter); // Mounting Router
+app.use('/api/v1/users', userRouter);
+
+
+tourRouter.route('/')
     .get(getAllTours)
     .post(createNewTour);
 
-app.route('/api/v1/tours/:id')
+    tourRouter.route('/:id')
     .get(getTourById)
     .patch(updateTour)
     .delete(deleteTour);
-    
+
+userRouter.route('/')
+    .get(getAllUsers)
+    .post(createNewUser);
+
+userRouter.route('/:id')
+    .get(getUserById)
+    .patch(updateUser)
+    .delete(deleteUser);
+
 app.listen(port,()=>{
     console.log(`App server running on port ${port}!`);
 });
