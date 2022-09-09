@@ -16,6 +16,20 @@ exports.validateId = (req, res, next, val) => {
     next();
 }
 
+// Check for valid request body
+exports.validateReqBody = (req, res, next) => {
+    console.log(req.body.name);
+    if(!req.body.name || !req.body.price){
+        return (
+            res.status(400).json({
+                status: 'failed',
+                message: 'Missing {name} or {price} in the request body!'
+            })
+        );
+    }
+    next();
+}
+
 // Get All Tours
 exports.getAllTours = (req, res) => {
 res.status(200).json({
