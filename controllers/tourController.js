@@ -2,7 +2,6 @@ const fs = require('fs');
 
 const tours = JSON.parse(fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`));
 
-
 exports.validateId = (req, res, next, val) => {
     const id = req.params.id * 1; // string to int conversion
     if(id >= tours.length ){
