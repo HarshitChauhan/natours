@@ -1,95 +1,112 @@
-const fs = require('fs'); 
-
-const tours = JSON.parse(fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`));
-
-exports.validateId = (req, res, next, val) => {
-    const id = req.params.id * 1; // string to int conversion
-    if(id >= tours.length ){
-        return (
-            res.status(404).json({
-                status: 'failed',
-                message: `No tour found with id: ${val}`
-            })
-        );
-    }
-    next();
-}
-
-// Check for valid request body
-exports.validateReqBody = (req, res, next) => {
-    console.log(req.body.name);
-    if(!req.body.name || !req.body.price){
-        return (
-            res.status(400).json({
-                status: 'failed',
-                message: 'Missing {name} or {price} in the request body!'
-            })
-        );
-    }
-    next();
-}
+const Tour = require('../models/tourModel');
 
 // Get All Tours
-exports.getAllTours = (req, res) => {
-res.status(200).json({
-    status: 'success',
-    requestedAt: req.requestTime,
-    results: tours.length,
-    data: {
-        tours
+exports.getAllTours = async (req, res) => {
+    try{
+        const tours = await Tour.find();
+        res.status(200).json({
+            status: 'success',
+            results: tours.length,
+            data: {
+                tours
+            }
+        })
+    } catch(err) {
+        res.status(404).json({
+            status: 'failed',
+            timeStamp: req.requestTime,
+            errorDetails: {
+                reason: "API:NOT_FOUND",
+                message: err
+            }
+        })
     }
-})
 };
 
 // Get Tour by ID
-exports.getTourById = (req, res) => {
-const id = req.params.id * 1; // string to int conversion
-const tour = tours.find(t => t.id === id);
-    // on success
-    res.status(200).json({
-        status: 'success',
-        data: {
-            tour
-        }
-    })
+exports.getTourById = async (req, res) => {
+    try{
+        const tour = await Tour.findById(req.params.id);
+        res.status(200).json({
+            status: 'success',
+            data: {
+                tour
+            }
+        })
+    } catch(err) {
+        res.status(404).json({
+            status: 'failed',
+            timeStamp: req.requestTime,
+            errorDetails: {
+                reason: "API:NOT_FOUND",
+                message: err
+            }
+        })
+    }
 };
 
 // Update Tour details by ID
-exports.updateTour = (req, res) => {
-    // on success
-    res.status(200).json({
-        status: 'success',
-        data: {
-            tour: '<Updating Tour...>'
-        }
-    })
+exports.updateTour = async (req, res) => {
+    try{
+        const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, { new:true, runValidators:true });
+        res.status(200).json({
+            status: 'success',
+            data: {
+                tour
+            }
+        })
+    } catch(err) {
+        res.status(404).json({
+            status: 'failed',
+            timeStamp: req.requestTime,
+            errorDetails: {
+                reason: "API:NOT_FOUND",
+                message: err
+            }
+        })
+    }
 };
 
 // Delete Tour by ID
-exports.deleteTour = (req, res) => {
-const id = req.params.id * 1; // string to int conversion
-const tour = tours.find(t => t.id === id);
-// on success
-res.status(204).json({
-    status: 'success',
-    data: {
-        tour: '<Deleting Tour...>'
+exports.deleteTour = async (req, res) => {
+    try{
+        const tour = await Tour.findByIdAndDelete(req.params.id);
+        // console.log(tour);
+        res.status(204).json({
+            status: 'success',
+            data: null
+        })
+    } catch(err) {
+        res.status(404).json({
+            status: 'failed',
+            timeStamp: req.requestTime,
+            errorDetails: {
+                reason: "API:NOT_FOUND",
+                message: err
+            }
+        })
     }
-})
 };
 
 // Create a new Tour
-exports.createNewTour = (req, res) => {
-    console.log((req.body));
-    const newId = tours[tours.length - 1].id + 1;
-    const newTour = Object.assign({id: newId}, req.body);
-    tours.push(newTour);
-    fs.writeFile(`${__dirname}/dev-data/data/tours-simple.json`, JSON.stringify(tours), err => {
+exports.createNewTour = async (req, res) => {
+    try{
+        const newTour = await Tour.create(req.body);
         res.status(201).json({
             status: 'success',
             data: {
                 tour: newTour
             }
+        });
+    } catch(err) {
+        res.status(400).json({
+            status: 'failed',
+            timeStamp: req.requestTime,
+            errorDetails: {
+                reason: "API:BAD_REQUEST",
+                message: err
+            }
         })
-    });
+    }
+    
 };
