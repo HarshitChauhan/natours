@@ -23,6 +23,14 @@ exports.getAllTours = async (req, res) => {
             query = query.sort('-createdAt'); // default sort param
         }
 
+        // Field limiting
+        if(req.query.fields){
+            const fields = req.query.fields.split(',').join(' '); // include fields to show as results 
+            query = query.select(fields);
+        } else {
+            query = query.select('-__v'); // removing mongodb '__v' field by default
+        }
+
         // Executing query
         const tours = await query;
         res.status(200).json({
