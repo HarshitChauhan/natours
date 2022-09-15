@@ -7,7 +7,12 @@ exports.getAllTours = async (req, res) => {
         const queryObj = {...req.query}; // creating shallow copy
         const excludedFields = ['page', 'sort', 'limit', 'fields']; // excluding not required params
         excludedFields.forEach( el => delete queryObj[el]) ;
-        const query = Tour.find(queryObj) ;
+
+        // creating comparison filterations [gte|gt|lte|lt]
+        let queryStr = JSON.stringify (queryObj) ;
+        queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
+                                                             
+        const query = Tour.find(JSON.parse(queryStr)) ;
 
         // Executing query
         const tours = await query;
