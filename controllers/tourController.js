@@ -12,7 +12,16 @@ exports.getAllTours = async (req, res) => {
         let queryStr = JSON.stringify (queryObj) ;
         queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
                                                              
-        const query = Tour.find(JSON.parse(queryStr)) ;
+        let query = Tour.find(JSON.parse(queryStr)) ;
+
+        // Sorting
+        if(req.query.sort){
+            const sortByQuery = req.query.sort.split(',').join(' '); // can have one or more sprting params
+            query = query.sort(sortByQuery); // [price, ratingsAverage] | [-price, -ratingsAverage] 
+            // (plu-minus for asc-desc order)  
+        } else {
+            query = query.sort('-createdAt'); // default sort param
+        }
 
         // Executing query
         const tours = await query;
