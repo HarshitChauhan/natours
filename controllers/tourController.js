@@ -1,5 +1,5 @@
-const { Error } = require('mongoose');
 const Tour = require('../models/tourModel');
+const QueryFeatures = require('../utils/queryFeatures');
 
 // middleware for top-five-tours alias
 exports.topFiveTours = (req, res, next) => {
@@ -12,48 +12,13 @@ exports.topFiveTours = (req, res, next) => {
 // Get All Tours
 exports.getAllTours = async (req, res) => {
     try{
-        // Building query
-        const queryObj = {...req.query}; // creating shallow copy
-        const excludedFields = ['page', 'sort', 'limit', 'fields']; // excluding not required params
-        excludedFields.forEach( el => delete queryObj[el]) ;
+        const features = new QueryFeatures(Tour.find(), req.query)
+            .filter()
+            .sort()
+            .limitFields()
+            .paginate();
 
-        // creating comparison filterations [gte|gt|lte|lt]
-        let queryStr = JSON.stringify (queryObj) ;
-        queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
-                                                             
-        let query = Tour.find(JSON.parse(queryStr)) ;
-
-        // Sorting
-        if(req.query.sort){
-            const sortByQuery = req.query.sort.split(',').join(' '); // can have one or more sprting params
-            query = query.sort(sortByQuery); // [price, ratingsAverage] | [-price, -ratingsAverage] 
-            // (plu-minus for asc-desc order)  
-        } else {
-            query = query.sort('-createdAt'); // default sort param
-        }
-
-        // Field limiting
-        if(req.query.fields){
-            const fields = req.query.fields.split(',').join(' '); // include fields to show as results 
-            query = query.select(fields);
-        } else {
-            query = query.select('-__v'); // removing mongodb '__v' field by default
-        }
-
-        // Implementing Pagination
-        const page = req.query.page * 1 || 1;
-        const limit = req.query.limit * 1 || 20;
-        const skip = (page - 1) * limit;
-
-        query = query.skip(skip).limit(limit);
-        
-        if(req.query.page){
-        const numOfTours = await Tour.countDocuments();
-        if (skip >= numOfTours) throw new Error('This page does not exist!');
-        }
-
-        // Executing query
-        const tours = await query;
+        const tours = await features.query;
         res.status(200).json({
             status: 'success',
             results: tours.length,
