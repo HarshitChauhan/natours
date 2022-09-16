@@ -1,6 +1,14 @@
 const { Error } = require('mongoose');
 const Tour = require('../models/tourModel');
 
+// middleware for top-five-tours alias
+exports.topFiveTours = (req, res, next) => {
+    req.query.limit = '5';
+    req.query.sort = '-ratingsAverage,price';
+    req.query.fields = 'name,price,summary,ratingsAverage,duration,difficulty';
+    next();
+}
+
 // Get All Tours
 exports.getAllTours = async (req, res) => {
     try{
