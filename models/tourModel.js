@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const slugify = require('slugify');
 
 // Mongo Schema
 const tourSchema = new mongoose.Schema(
@@ -12,7 +13,7 @@ const tourSchema = new mongoose.Schema(
       // minlength: [10, 'A tour name must have more or equal then 10 characters']
       // validate: [validator.isAlpha, 'Tour name must only contain caracters']
     },
-    // slug: String,
+    slug: String,
     duration: {
       type: Number,
       required: [true, 'A tour must have a duration']
@@ -74,10 +75,10 @@ const tourSchema = new mongoose.Schema(
       select: false
     },
     startDates: [Date],
-  //   secretTour: {
-  //     type: Boolean,
-  //     default: false
-  //   },
+    secretTour: {
+      type: Boolean,
+      default: false
+    },
   //   startLocation: {
   //     // GeoJSON
   //     type: {
@@ -119,6 +120,31 @@ const tourSchema = new mongoose.Schema(
   tourSchema.virtual('durationWeeks').get( function () {
     return this.duration / 7;
   })
+
+    // DOCUMENT MIDDLEWARE: runs before .save() and .create() !.update()
+  tourSchema.pre('save', function(next) {
+    this.slug = slugify(this.name, { lower: true });
+    next();
+  });
+
+  // tourSchema.post('save', (doc, next) => {
+  //   console.log(doc);
+  //   next();
+  // });
+
+  // QUERY MIDDLEWARE: runs for query methods .find() and .findOne() etc
+  // tourSchema.pre('find', function(next) {
+  tourSchema.pre(/^find/, function(next) { // using regex for methods starting from 'find', like find, findOneandUpdate etc 
+    this.find({ secretTour: { $ne: true } }); // removing all the documents from the output which have secretTour set to true
+    next();
+  });
+
+  // AGGREGATION MIDDLEWARE
+  tourSchema.pre('aggregate', function(next) {
+    this.pipeline().unshift({ $match: { secretTour: { $ne: true } } }); // removing all the documents from the stats and monthly-plan output which have secretTour set to true
+    next();
+  });
+
   const Tour = mongoose.model('Tour', tourSchema); // created a Tour out of this specified schema
 
   module.exports = Tour;
