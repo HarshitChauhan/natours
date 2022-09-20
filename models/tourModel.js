@@ -8,9 +8,9 @@ const tourSchema = new mongoose.Schema(
       type: String,
       required: [true, 'A tour must have a name'],
       unique: true,
-      // trim: true,
-      // maxlength: [40, 'A tour name must have less or equal then 40 characters'],
-      // minlength: [10, 'A tour name must have more or equal then 10 characters']
+      trim: true,
+      maxlength: [40, 'A tour name must have less or equal then 40 characters'],
+      minlength: [10, 'A tour name must have more or equal then 10 characters'],
       // validate: [validator.isAlpha, 'Tour name must only contain caracters']
     },
     slug: String,
@@ -25,16 +25,16 @@ const tourSchema = new mongoose.Schema(
     difficulty: {
       type: String,
       required: [true, 'A tour must have a difficulty'],
-      // enum: {
-      //   values: ['easy', 'medium', 'difficult'],
-      //   message: 'Difficulty is either: easy, medium, difficulty'
-      // }
+      enum: {
+        values: ['easy', 'medium', 'difficult'],
+        message: 'Difficulty is either: easy, medium or difficulty !'
+      }
     },
     ratingsAverage: {
       type: Number,
       default: 4.5,
-      // min: [1, 'Rating must be above 1.0'],
-      // max: [5, 'Rating must be below 5.0'],
+      min: [1, 'Rating must be above 1.0'],
+      max: [5, 'Rating must be below 5.0'],
       // set: val => Math.round(val * 10) / 10
     },
     ratingsQuantity: {
@@ -47,13 +47,12 @@ const tourSchema = new mongoose.Schema(
     },
     priceDiscount: {
       type: Number,
-      // validate: {
-      //   validator: function(value) {
-      //     // this only points to current doc on NEW documnet creation
-      //     return value < this.price;
-      //   },
-        // message: 'Discount price ({VALUE}) should be below regular price'
-      // }
+      validate: {
+        validator: function(value) {
+          return value < this.price; // 'this' only points to current doc on NEW documnet creation
+        },
+        message: 'Discount price ({VALUE}) should be below regular price'
+      }
     },
     summary: {
       type: String,
