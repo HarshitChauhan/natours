@@ -108,14 +108,17 @@ const tourSchema = new mongoose.Schema(
   //       ref: 'User'
   //     }
   //   ]
-  // },
-  // {
-  //   toJSON: { virtuals: true },
-  //   toObject: { virtuals: true }
-  // }
+  },
+  {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
   }
 );
   
+  // virtual properties is not actual data that present on db, it is calculated after fetching db data 
+  tourSchema.virtual('durationWeeks').get( function () {
+    return this.duration / 7;
+  })
   const Tour = mongoose.model('Tour', tourSchema); // created a Tour out of this specified schema
 
   module.exports = Tour;
