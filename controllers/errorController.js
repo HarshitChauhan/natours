@@ -1,3 +1,24 @@
+const AppErrorHandler = require("../utils/appErrorHandler");
+
+// Database error to Operational errors conversion
+const handleDatabaseCastError = err => { // for invalid Database ID's
+    const message = `Invalid ${err.path}: ${err.value}.`;
+    return new AppErrorHandler(message, 400);
+  };
+
+const handleDatabaseDuplicateFields = err => { // for duplicate key error
+    const value = err.errmsg.match(/(["'])(\\?.)*?\1/)[0];
+    const message = `Duplicate field value conflict occured at database for value: ${value}. Please use unique values only!`;
+    return new AppErrorHandler(message, 400);
+};
+
+const handleDatabaseValidationError = err => { // for data(req body) validation
+    const errors = Object.values(err.errors).map(el => el.message);
+    const message = `Invalid input data. ${errors.join('. ')}`;
+    return new AppErrorHandler(message, 400);
+};
+
+// Development error format
 const sendErrorDev = (err, res) => {
     res.status(err.statusCode).json({
         status: err.status,
@@ -10,12 +31,14 @@ const sendErrorDev = (err, res) => {
         }
     });
 }
+
+// Production error format
 const sendErrorProd = (err, res) => {
     // Operational errors are trusted, can show details to client
     if(err.isOperational){
         res.status(err.statusCode).json({
             status: err.status,
-            timeStamp: err.timeStamp,
+            timeStamp: new Date().toISOString(),
             errorDetails: {
                 // reason: err.reason, // need to take care of [error reason] later
                 message: err.message
@@ -37,6 +60,7 @@ const sendErrorProd = (err, res) => {
 
 }
 
+// Global Error Handler
 module.exports = (err, req, res, next)=>{
     err.statusCode = err.statusCode || 500;
     err.status = err.status || 'failed';
@@ -45,7 +69,10 @@ module.exports = (err, req, res, next)=>{
     // different format of error for each ENV
     if(process.env.NODE_ENV === 'dev'){
         sendErrorDev(err, res);
-    }else if(process.env.NODE_ENV === 'prod'){
-        sendErrorProd(err, res);
-    } 
+    }else if(process.env.NODE_ENV === 'production'){
+        if (err.name === 'CastError') err = handleDatabaseCastError(err);
+        if (err.code === 11000) err = handleDatabaseDuplicateFields(err);
+        if (err.name === 'ValidationError') err = handleDatabaseValidationError(err);
+        sendErrorProd(err, res);   
+    }
   }
