@@ -1,4 +1,6 @@
 const Tour = require('../models/tourModel');
+const AppErrorHandler = require('../utils/appErrorHandler');
+const catchAsync = require('../utils/catchAsync');
 const QueryFeatures = require('../utils/queryFeatures');
 
 // middleware for top-five-tours alias
@@ -10,9 +12,8 @@ exports.topFiveTours = (req, res, next) => {
 }
 
 // Aggregation pipeline - Matching and Grouping
-exports.getTourStats = async (req, res) => {
-    try{
-        const stats = await Tour.aggregate([
+exports.getTourStats = catchAsync( async (req, res) => {
+    const stats = await Tour.aggregate([
         {
             $match: { ratingsAverage: { $gte: 4.5 } }
         },
@@ -30,29 +31,18 @@ exports.getTourStats = async (req, res) => {
         {
             $sort: { avgPrice: 1 }
         }
-        ]);
-    
-        res.status(200).json({
+    ]);
+
+    res.status(200).json({
         status: 'success',
         data: {
             stats
         }
-        });
-    } catch(err) {
-        res.status(404).json({
-            status: 'failed',
-            timeStamp: req.requestTime,
-            errorDetails: {
-                reason: "API:NOT_FOUND",
-                message: err
-            }
-        })
-    }
-  };
+    });
+  });
 
   // Aggregation pipeline - Unwind and Project
-  exports.getMonthlyPlan = async (req, res) => {
-    try{
+  exports.getMonthlyPlan = catchAsync( async (req, res) => {
     const year = req.params.year * 1;
   
     const plan = await Tour.aggregate([
@@ -95,132 +85,97 @@ exports.getTourStats = async (req, res) => {
         plan
       }
     });
-
-    } catch(err) {
-        res.status(404).json({
-            status: 'failed',
-            timeStamp: req.requestTime,
-            errorDetails: {
-                reason: "API:NOT_FOUND",
-                message: err
-            }
-        })
-    }
-  };
+  });
 
 // Get All Tours
-exports.getAllTours = async (req, res) => {
-    try{
-        const features = new QueryFeatures(Tour.find(), req.query)
-            .filter()
-            .sort()
-            .limitFields()
-            .paginate();
+exports.getAllTours = catchAsync( async (req, res) => {
+    const features = new QueryFeatures(Tour.find(), req.query)
+        .filter()
+        .sort()
+        .limitFields()
+        .paginate();
 
-        const tours = await features.query;
-        res.status(200).json({
-            status: 'success',
-            results: tours.length,
-            data: {
-                tours
-            }
-        })
-    } catch(err) {
-        res.status(404).json({
-            status: 'failed',
-            timeStamp: req.requestTime,
-            errorDetails: {
-                reason: "API:NOT_FOUND",
-                message: err
-            }
-        })
-    }
-};
+    const tours = await features.query;
+    res.status(200).json({
+        status: 'success',
+        results: tours.length,
+        data: {
+            tours
+        }
+    })
+});
 
 // Get Tour by ID
-exports.getTourById = async (req, res) => {
-    try{
-        const tour = await Tour.findById(req.params.id);
-        res.status(200).json({
-            status: 'success',
-            data: {
-                tour
-            }
-        })
-    } catch(err) {
-        res.status(404).json({
-            status: 'failed',
-            timeStamp: req.requestTime,
-            errorDetails: {
-                reason: "API:NOT_FOUND",
-                message: err
-            }
-        })
+exports.getTourById = catchAsync( async (req, res, next) => {
+    const tour = await Tour.findById(req.params.id);
+    if(!tour){
+        return next(new AppErrorHandler(`No tour found with ID {${req.params.id}}`,404));
     }
-};
+
+    res.status(200).json({
+        status: 'success',
+        data: {
+            tour
+        }
+    })
+});
 
 // Update Tour details by ID
-exports.updateTour = async (req, res) => {
-    try{
-        const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, { new:true, runValidators:true });
-        res.status(200).json({
-            status: 'success',
-            data: {
-                tour
-            }
-        })
-    } catch(err) {
-        res.status(404).json({
-            status: 'failed',
-            timeStamp: req.requestTime,
-            errorDetails: {
-                reason: "API:NOT_FOUND",
-                message: err
-            }
-        })
+exports.updateTour = catchAsync( async (req, res, next) => {
+    const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, { new:true, runValidators:true });
+    if(!tour){
+        return next(new AppErrorHandler(`No tour found with ID {${req.params.id}}`,404));
     }
-};
+
+    res.status(200).json({
+        status: 'success',
+        data: {
+            tour
+        }
+    })
+});
 
 // Delete Tour by ID
-exports.deleteTour = async (req, res) => {
-    try{
-        const tour = await Tour.findByIdAndDelete(req.params.id);
-        // console.log(tour);
-        res.status(204).json({
-            status: 'success',
-            data: null
-        })
-    } catch(err) {
-        res.status(404).json({
-            status: 'failed',
-            timeStamp: req.requestTime,
-            errorDetails: {
-                reason: "API:NOT_FOUND",
-                message: err
-            }
-        })
+exports.deleteTour = catchAsync( async (req, res, next) => {
+    const tour = await Tour.findByIdAndDelete(req.params.id);
+    if(!tour){
+        return next(new AppErrorHandler(`No tour found with ID {${req.params.id}}`,404));
     }
-};
+
+    res.status(204).json({
+        status: 'success',
+        data: null
+    })
+});
 
 // Create a new Tour
-exports.createNewTour = async (req, res) => {
-    try{
-        const newTour = await Tour.create(req.body);
+exports.createNewTour = catchAsync( async (req, res) => { 
+    // implementing new way for error catching instead of try-catch block
+    const newTour = await Tour.create(req.body);
         res.status(201).json({
             status: 'success',
             data: {
                 tour: newTour
             }
         });
-    } catch(err) {
-        res.status(400).json({
-            status: 'failed',
-            timeStamp: req.requestTime,
-            errorDetails: {
-                reason: "API:BAD_REQUEST",
-                message: err
-            }
-        })
-    }
     
-};
+        // regular way to implement error catching // 
+    // try{
+    //     const newTour = await Tour.create(req.body);
+    //     res.status(201).json({
+    //         status: 'success',
+    //         data: {
+    //             tour: newTour
+    //         }
+    //     });
+    // } catch(err) {
+    //     res.status(400).json({
+    //         status: 'failed',
+    //         timeStamp: req.requestTime,
+    //         errorDetails: {
+    //             reason: "API:BAD_REQUEST",
+    //             message: err
+    //         }
+    //     })
+    // }
+});
