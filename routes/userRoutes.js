@@ -1,7 +1,7 @@
 const express = require('express');
 
 const router = express.Router();
-const { signup } = require('../controllers/authController');
+const { signup, login } = require('../controllers/authController');
 const { getAllUsers, createNewUser, getUserById, updateUser, deleteUser } = require('../controllers/userController');
 
 router.route('/')
@@ -15,5 +15,6 @@ router.route('/:id')
 
 // Authentication routes for users
 router.post('/signup', signup);
+router.post('/login', login);
 
 module.exports = router;

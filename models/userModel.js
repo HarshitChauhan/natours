@@ -22,6 +22,7 @@ const userSchema = new mongoose.Schema({
       type: String,
       required: [true, 'Please provied a password'],
       minlength: 8,
+      select: false // to not show this field in any kind of output
     },
     passwordConfirm: {
       type: String,
@@ -44,6 +45,9 @@ userSchema.pre('save', async function (next) {
     this.passwordConfirm = undefined; // bcoz we dont need this field to be persisted into database
     next();
 })
+
+// it is a instance Method (available to all the user documents) // method is for comparing passwords for login
+userSchema.methods.checkPassword = async(candidatePassword, userPassword) => await bcrypt.compare(candidatePassword, userPassword);
 
 const User = mongoose.model('User', userSchema);
 
