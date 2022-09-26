@@ -35,6 +35,10 @@ const userSchema = new mongoose.Schema({
         message: 'Passwords are not the same!'
       }
     },
+    passwordChangedAt: {
+      type: Date,
+      default: new Date().toISOString()
+    }
   });
 
 userSchema.pre('save', async function (next) {
@@ -45,6 +49,16 @@ userSchema.pre('save', async function (next) {
     this.passwordConfirm = undefined; // bcoz we dont need this field to be persisted into database
     next();
 })
+
+userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(this.passwordChangedAt.getTime() / 1000, 10);
+
+    return JWTTimestamp < changedTimestamp; // checking if user has changed the password after the jwt token was issued
+  }
+  // False means password NOT changed
+  return false;
+};
 
 // it is a instance Method (available to all the user documents) // method is for comparing passwords for login
 userSchema.methods.checkPassword = async(candidatePassword, userPassword) => await bcrypt.compare(candidatePassword, userPassword);
