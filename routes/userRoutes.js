@@ -1,8 +1,10 @@
 const express = require('express');
 
 const router = express.Router();
-const { signup, login, forgotPassword, resetPassword } = require('../controllers/authController');
+const { signup, login, forgotPassword, resetPassword, protect, updatePassword } = require('../controllers/authController');
 const { getAllUsers, createNewUser, getUserById, updateUser, deleteUser } = require('../controllers/userController');
+
+router.patch('/updateMyPassword', protect, updatePassword);
 
 router.route('/')
     .get(getAllUsers)
