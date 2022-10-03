@@ -11,6 +11,17 @@ const signJwtToken = ( id ) => jwt.sign({ id }, process.env.JWT_SECRET_KEY, { ex
 const createSendToken = (user, statusCode, req, res) => {
   const token = signJwtToken(user._id);
 
+  // storing jwt in browser as cookie
+  res.cookie('jwt', token, {
+    // cookie options
+    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
+    httpOnly: true, // cookie cannot be accessed or modified in any way by the browser
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https'
+  });
+
+  // Remove password from output
+  user.password = undefined;
+
   res.status(statusCode).json({
     status: 'success',
     token,
