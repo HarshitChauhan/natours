@@ -120,6 +120,13 @@ const tourSchema = new mongoose.Schema(
     return this.duration / 7;
   })
 
+  // Virtual populate (showing in the results without storing in db)
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour', // field name in Review collection
+  localField: '_id' // ref to which field in Tour collection
+});
+
     // DOCUMENT MIDDLEWARE: runs before .save() and .create() !.update()
   tourSchema.pre('save', function(next) {
     this.slug = slugify(this.name, { lower: true });
