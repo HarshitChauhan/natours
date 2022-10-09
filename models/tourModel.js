@@ -78,36 +78,36 @@ const tourSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
-  //   startLocation: {
-  //     // GeoJSON
-  //     type: {
-  //       type: String,
-  //       default: 'Point',
-  //       enum: ['Point']
-  //     },
-  //     coordinates: [Number],
-  //     address: String,
-  //     description: String
-  //   },
-  //   locations: [
-  //     {
-  //       type: {
-  //         type: String,
-  //         default: 'Point',
-  //         enum: ['Point']
-  //       },
-  //       coordinates: [Number],
-  //       address: String,
-  //       description: String,
-  //       day: Number
-  //     }
-  //   ],
-  //   guides: [
-  //     {
-  //       type: mongoose.Schema.ObjectId,
-  //       ref: 'User'
-  //     }
-  //   ]
+    startLocation: {
+      // GeoJSON Data Type for GeoLocation in Mongo
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point']
+      },
+      coordinates: [Number],
+      address: String,
+      description: String
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point']
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number
+      }
+    ],
+    guides: [
+      {
+        type: mongoose.Schema.ObjectId, // referencing model
+        ref: 'User'
+      }
+    ]
   },
   {
     toJSON: { virtuals: true },
@@ -125,13 +125,16 @@ const tourSchema = new mongoose.Schema(
     this.slug = slugify(this.name, { lower: true });
     next();
   });
-
-  // tourSchema.post('save', (doc, next) => {
-  //   console.log(doc);
-  //   next();
-  // });
-
+  
   // QUERY MIDDLEWARE: runs for query methods .find() and .findOne() etc
+  tourSchema.pre(/^find/, function(next) {
+    this.populate({
+      path: 'guides', // populating guides details referencing ids 
+      select: '-__v -passwordChangedAt' // removing these fields from result output
+    });
+    next();
+  });
+
   // tourSchema.pre('find', function(next) {
   tourSchema.pre(/^find/, function(next) { // using regex for methods starting from 'find', like find, findOneandUpdate etc 
     this.find({ secretTour: { $ne: true } }); // removing all the documents from the output which have secretTour set to true
