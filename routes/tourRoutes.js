@@ -1,10 +1,11 @@
 const express = require('express');
 const { protect, restrictTo } = require('../controllers/authController');
+const reviewRouter = require("./reviewRoutes");
 
 const router = express.Router();
 const { getAllTours, createNewTour, getTourById, updateTour, deleteTour, topFiveTours, getTourStats, getMonthlyPlan } = require('../controllers/tourController');
 
-// router.param('id', validateId);
+router.use('/:tourId/reviews', reviewRouter);
 
 // creating alias endpoint {using custom middleware}
 router.route('/top-five-tours').get(topFiveTours, getAllTours);
