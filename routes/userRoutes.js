@@ -1,7 +1,7 @@
 const express = require('express');
 
 const router = express.Router();
-const { signup, login, forgotPassword, resetPassword, protect, updatePassword } = require('../controllers/authController');
+const { signup, login, forgotPassword, resetPassword, protect, updatePassword, restrictTo } = require('../controllers/authController');
 const { getAllUsers, createNewUser, getUserById, updateUser, deleteUser, updateMe, deleteMe } = require('../controllers/userController');
 
 // Authentication routes for users
@@ -23,6 +23,6 @@ router.route('/')
 router.route('/:id')
     .get(getUserById)
     .patch(updateUser)
-    .delete(deleteUser);
+    .delete(protect, restrictTo('admin'), deleteUser);
 
 module.exports = router;

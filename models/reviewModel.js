@@ -33,6 +33,9 @@ const reviewSchema = new mongoose.Schema(
   }
 );
 
+// one tour should have only one review from one user
+reviewSchema.index({ tour: 1, user: 1 }, { unique: true });
+
 reviewSchema.pre(/^find/, function(next) {
     this.populate({
       path: 'user',

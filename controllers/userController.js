@@ -1,6 +1,7 @@
 const User = require("../models/userModel");
 const catchAsync = require("../utils/catchAsync");
 const AppErrorHandler = require('../utils/appErrorHandler')
+const factory = require('./handlerFactory');
 
 // Get all Users
 exports.getAllUsers = catchAsync( async (req, res, next) => {
@@ -79,17 +80,8 @@ exports.getUserById = (req,res) => {
 }
 
 // Update User
-exports.updateUser = (req,res) => {
-    res.status(500).send({
-        status: 'error',
-        message: 'This route is not implemented yet!'
-    })
-}
+// update password will not work from this route  
+exports.updateUser = factory.updateOne(User);
 
 // Delete User
-exports.deleteUser = (req,res) => {
-    res.status(500).send({
-        status: 'error',
-        message: 'This route is not implemented yet!'
-    })
-}
+exports.deleteUser = factory.deleteOne(User);
