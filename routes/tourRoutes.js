@@ -3,7 +3,7 @@ const { protect, restrictTo } = require('../controllers/authController');
 const reviewRouter = require("./reviewRoutes");
 
 const router = express.Router();
-const { getAllTours, createNewTour, getTourById, updateTour, deleteTour, topFiveTours, getTourStats, getMonthlyPlan } = require('../controllers/tourController');
+const { getAllTours, createNewTour, getTourById, updateTour, deleteTour, topFiveTours, getTourStats, getMonthlyPlan, getToursWithin } = require('../controllers/tourController');
 
 router.use('/:tourId/reviews', reviewRouter);
 
@@ -14,15 +14,21 @@ router.route('/top-five-tours').get(topFiveTours, getAllTours);
 router.route('/tour-stats').get(getTourStats);
 
 // tours Monthly Plan by [Year] through Aggregation pipeline
-router.route('/tour-monthly-plan/:year').get(getMonthlyPlan);
+router.route('/tour-monthly-plan/:year').get(protect, restrictTo('admin', 'lead-guide', 'guide'), getMonthlyPlan);
+
+// tours within range distance // eg., tour within 50 from center as delhi in unit kms or mi
+// tour-within/50/center/-25,30/unit/km
+router.route('/tour-within/:distance/center/:latlng/unit/:unit').get(getToursWithin);
+
+router.use(protect);
 
 router.route('/')
-    .get(protect ,getAllTours)
-    .post(protect, restrictTo('admin', 'lead-guide'), createNewTour);
+    .get(getAllTours)
+    .post(restrictTo('admin', 'lead-guide'), createNewTour);
     
 router.route('/:id')
-    .get(protect, getTourById)
-    .patch(protect, restrictTo('admin', 'lead-guide'), updateTour)
-    .delete(protect, restrictTo('admin', 'lead-guide'), deleteTour);
+    .get(getTourById)
+    .patch(restrictTo('admin', 'lead-guide'), updateTour)
+    .delete(restrictTo('admin', 'lead-guide'), deleteTour);
     
 module.exports = router;

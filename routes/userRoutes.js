@@ -2,7 +2,7 @@ const express = require('express');
 
 const router = express.Router();
 const { signup, login, forgotPassword, resetPassword, protect, updatePassword, restrictTo } = require('../controllers/authController');
-const { getAllUsers, createNewUser, getUserById, updateUser, deleteUser, updateMe, deleteMe } = require('../controllers/userController');
+const { getAllUsers, createNewUser, getUserById, updateUser, deleteUser, updateMe, deleteMe, getMe } = require('../controllers/userController');
 
 // Authentication routes for users
 router.post('/signup', signup);
@@ -11,9 +11,16 @@ router.post('/login', login);
 router.post('/forgotPassword', forgotPassword);
 router.patch('/resetPassword/:token', resetPassword);
 
-router.patch('/updateMyPassword', protect, updatePassword);
-router.patch('/updateMe', protect, updateMe);
-router.delete('/deleteMe', protect, deleteMe);
+// to Protect all the below routes, using one router middleware trick instead of passing to each route
+router.use(protect); 
+
+router.get('/myProfile', getMe, getUserById);
+router.patch('/updateMyPassword', updatePassword);
+router.patch('/updateMe', updateMe);
+router.delete('/deleteMe', deleteMe);
+
+// same technique to restrict access to admins only for below routes
+router.use(restrictTo('admin'));
 
 // other routes
 router.route('/')
@@ -23,6 +30,6 @@ router.route('/')
 router.route('/:id')
     .get(getUserById)
     .patch(updateUser)
-    .delete(protect, restrictTo('admin'), deleteUser);
+    .delete(deleteUser);
 
 module.exports = router;
