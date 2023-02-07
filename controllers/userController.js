@@ -3,18 +3,6 @@ const catchAsync = require("../utils/catchAsync");
 const AppErrorHandler = require('../utils/appErrorHandler')
 const factory = require('./handlerFactory');
 
-// Get all Users
-exports.getAllUsers = catchAsync( async (req, res, next) => {
-    const users = await User.find();
-    res.status(200).json({
-        status: 'success',
-        results: users.length,
-        data: {
-            users
-        }
-    })
-});
-
 // filter function to filter values what fields can be updated
 const filterObj = (obj, ...allowedFields) => {
     const newObj = {};
@@ -24,7 +12,7 @@ const filterObj = (obj, ...allowedFields) => {
   
     return newObj;
   };
-
+  
   // Current user updates its profile
 exports.updateMe = catchAsync(async (req, res, next) => {
     // 1) Create error if user POSTs password data
@@ -63,21 +51,19 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     });
   });
 
+  // Get all Users
+  exports.getAllUsers = factory.getAll(User);
+  
 // Create a new User
 exports.createNewUser = (req,res) => {
     res.status(500).send({
         status: 'error',
-        message: 'This route is not implemented yet!'
+        message: 'This route is not implemented please use /signup instead!'
     })
 }
 
 // Get User by ID
-exports.getUserById = (req,res) => {
-    res.status(500).send({
-        status: 'error',
-        message: 'This route is not implemented yet!'
-    })
-}
+exports.getUserById = factory.getOne(User);
 
 // Update User
 // update password will not work from this route  
@@ -85,3 +71,9 @@ exports.updateUser = factory.updateOne(User);
 
 // Delete User
 exports.deleteUser = factory.deleteOne(User);
+
+// User my profile endpoint
+exports.getMe = (req,res,next) => {
+  req.params.id = req.user.id;
+  next();
+}
