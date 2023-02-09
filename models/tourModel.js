@@ -115,6 +115,10 @@ const tourSchema = new mongoose.Schema(
   }
 );
   
+  // Improving read performance using Indexes
+  tourSchema.index({ price: 1, ratingsAverage: -1 });
+  tourSchema.index({ slug: 1 });
+
   // virtual properties is not actual data that present on db, it is calculated after fetching db data 
   tourSchema.virtual('durationWeeks').get( function () {
     return this.duration / 7;
