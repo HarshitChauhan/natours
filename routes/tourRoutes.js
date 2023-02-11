@@ -3,7 +3,7 @@ const { protect, restrictTo } = require('../controllers/authController');
 const reviewRouter = require("./reviewRoutes");
 
 const router = express.Router();
-const { getAllTours, createNewTour, getTourById, updateTour, deleteTour, topFiveTours, getTourStats, getMonthlyPlan, getToursWithin } = require('../controllers/tourController');
+const { getAllTours, createNewTour, getTourById, updateTour, deleteTour, topFiveTours, getTourStats, getMonthlyPlan, getToursWithin, getDistances } = require('../controllers/tourController');
 
 router.use('/:tourId/reviews', reviewRouter);
 
@@ -19,6 +19,8 @@ router.route('/tour-monthly-plan/:year').get(protect, restrictTo('admin', 'lead-
 // tours within range distance // eg., tour within 50 from center as delhi in unit kms or mi
 // tour-within/50/center/-25,30/unit/km
 router.route('/tour-within/:distance/center/:latlng/unit/:unit').get(getToursWithin);
+
+router.route('/distances/:latlng/unit/:unit').get(getDistances);
 
 router.use(protect);
 

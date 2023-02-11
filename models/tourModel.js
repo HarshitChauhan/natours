@@ -118,6 +118,7 @@ const tourSchema = new mongoose.Schema(
   // Improving read performance using Indexes
   tourSchema.index({ price: 1, ratingsAverage: -1 });
   tourSchema.index({ slug: 1 });
+  tourSchema.index({ startLocation: '2dsphere' });
 
   // virtual properties is not actual data that present on db, it is calculated after fetching db data 
   tourSchema.virtual('durationWeeks').get( function () {
@@ -153,10 +154,10 @@ tourSchema.virtual('reviews', {
   });
 
   // AGGREGATION MIDDLEWARE
-  tourSchema.pre('aggregate', function(next) {
-    this.pipeline().unshift({ $match: { secretTour: { $ne: true } } }); // removing all the documents from the stats and monthly-plan output which have secretTour set to true
-    next();
-  });
+  // tourSchema.pre('aggregate', function(next) {
+  //   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } }); // removing all the documents from the stats and monthly-plan output which have secretTour set to true
+  //   next();
+  // });
 
   const Tour = mongoose.model('Tour', tourSchema); // created a Tour out of this specified schema
 
